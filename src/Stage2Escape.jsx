@@ -1178,6 +1178,9 @@ export default function Stage2Escape({
 
   function oldAction(id) {
     if (oldRewardReady && (id === "person" || id === "food")) {
+      clearTimeout(bubbleTimer.current);
+      setBubble(null);
+      setSpeech("");
       setModal({ type: "oldReward" });
       return;
     }

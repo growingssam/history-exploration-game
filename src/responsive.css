@@ -15,6 +15,10 @@
 }
 .stage:fullscreen { width: 100%; height: 100%; }
 button, select { touch-action: manipulation; }
+/* The visible reward is immediately available, even while Haru is speaking. */
+.chain-game.old-reward-ready .chain-hit.old-person.rewarded {
+  pointer-events: auto;
+}
 /* Bronze finale: keep scenery, doorway and actor in one shared SVG coordinate space. */
 .chain-overlay:has(.compact-bronze-reward) { background: #2d1c10bf; backdrop-filter: blur(3px); }
 .chain-card.compact-bronze-reward { grid-template-rows: auto minmax(0, 1fr) auto auto; }
