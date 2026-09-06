@@ -25,7 +25,7 @@ const html=`<!doctype html>
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <title>역사 속에 갇혔다! : 모바일 확인용</title>
   <style>${css}</style>
 </head>

@@ -39,6 +39,7 @@ import joseonNuriWorried from "./assets/gojoseon_nuri_worried.png";
 import joseonNuriReward from "./assets/gojoseon_nuri_reward.png";
 import "./chain-extra.css";
 import "./stage2-polish.css";
+import { safeHeroPosition } from "./hero-placement.js";
 
 const KEY = "historyEscapeStage2_v24_story_order";
 const eras = [
@@ -370,14 +371,14 @@ const eraBriefings = {
       {
         speaker: "npc",
         text: "나는 마루야. 수확에 쓸 도구를 고르지 못하겠어.",
-        left: "61%",
+        left: "86%",
         top: "57%",
       },
       {
         speaker: "hero",
         text: "내가 같이 찾아볼게. 생김새부터 살펴보자!",
-        left: "49%",
-        top: "68%",
+        left: "71%",
+        top: "63%",
       },
     ],
   },
@@ -388,14 +389,14 @@ const eraBriefings = {
       {
         speaker: "npc",
         text: "나는 누리야. 푸른빛이 번쩍인 뒤 단서들이 뒤섞였어.",
-        left: "74%",
+        left: "86%",
         top: "58%",
       },
       {
         speaker: "hero",
         text: "그럼 흩어진 단서를 하나씩 제자리로 돌려놓자!",
-        left: "62%",
-        top: "68%",
+        left: "72%",
+        top: "63%",
       },
     ],
   },
@@ -468,11 +469,14 @@ export default function Stage2Escape({
   const [speech, setSpeech] = useState(
     "으악…! 여기가 어디야? 교실이 아니잖아!",
   );
-  const [heroPos, setHeroPos] = useState(() =>
+  const [heroPos, setHeroPosition] = useState(() =>
     g.route === "old" && g.old.wall && !g.old.met
       ? { left: "36%", bottom: "-2%" }
       : { left: "4%", bottom: "-2%" },
   );
+  // Every walking/meeting destination uses the same foreground protection.
+  const setHeroPos = (position, route = g.route) =>
+    setHeroPosition(safeHeroPosition(route, position));
   const [walking, setWalking] = useState(false);
   const [meetingId, setMeetingId] = useState("");
   const [followingChild, setFollowingChild] = useState(false);
@@ -721,7 +725,9 @@ export default function Stage2Escape({
     : currentProgress === 4;
   const placeBubble = (text, left = "50%", top = "48%", speaker = "hero") => {
     const x = Math.max(4, Math.min(96, Number.parseFloat(left) || 50));
-    const y = Math.max(14, Math.min(90, Number.parseFloat(top) || 48));
+    let y = Math.max(14, Math.min(90, Number.parseFloat(top) || 48));
+    // Keep foreground observations above the stone/tools, not over their artwork.
+    if ((g.route === "bronze" || g.route === "joseon") && x >= 30 && x <= 67 && y > 62) y = 62;
     const align = x < 28 ? "left" : x > 72 ? "right" : "center";
     setSpeech("");
     setBubble({ text, left: `${x}%`, top: `${y}%`, align, speaker });
@@ -854,8 +860,8 @@ export default function Stage2Escape({
     setHeroPos(
       {
         new: { left: "59%", bottom: "-2%" },
-        bronze: { left: "48%", bottom: "-2%" },
-        joseon: { left: "61%", bottom: "-2%" },
+        bronze: { left: "66%", bottom: "-2%" },
+        joseon: { left: "69%", bottom: "-2%" },
       }[id],
     );
     if (id === "new") {
@@ -865,12 +871,12 @@ export default function Stage2Escape({
     if (id === "bronze") {
       setMaruMode("curious");
       setMaruWalking(true);
-      setMaruPos({ left: "57%", bottom: "-3%" });
+      setMaruPos({ left: "80%", bottom: "-3%" });
     }
     if (id === "joseon") {
       setNuriMode("happy");
       setNuriWalking(true);
-      setNuriPos({ left: "69%", bottom: "-4%" });
+      setNuriPos({ left: "78%", bottom: "-4%" });
     }
     meetingTimer.current = setTimeout(() => {
       setWalking(false);
@@ -881,6 +887,10 @@ export default function Stage2Escape({
     }, 1050);
     meetingReturnTimer.current = setTimeout(() => {
       gameSfx("step");
+      if (id === "bronze" || id === "joseon") {
+        setWalking(true);
+        setHeroPos({ left: id === "bronze" ? "18%" : "15%", bottom: "-2%" }, id);
+      }
       if (id === "new") {
         setNewChildWalking(true);
         setNewChildPos({ left: "79.5%", bottom: "-2.5%" });
@@ -896,6 +906,7 @@ export default function Stage2Escape({
     }, 6200);
     meetingSettleTimer.current = setTimeout(() => {
       setMeetingId("");
+      setWalking(false);
       setNewChildWalking(false);
       setMaruWalking(false);
       setNuriWalking(false);
@@ -1146,7 +1157,7 @@ export default function Stage2Escape({
       return;
     }
     const next = eras[i + 1];
-    setHeroPos({ left: "3%", bottom: "-2%" });
+    setHeroPos({ left: "3%", bottom: "-2%" }, next.id);
     if (next.id === "new") {
       setNewChildPos({ left: "79.5%", bottom: "-2.5%" });
       setNewChildWalking(false);
@@ -2681,7 +2692,7 @@ export default function Stage2Escape({
             sound="stone"
             label={`푸른 시간 균열 ${joseonSolvedCount}/4`}
             guided={joseonStep === "record"}
-            onClick={() => moveTo("43%", "-2%", () => joseonAction("record"))}
+            onClick={() => moveTo("15%", "-2%", () => joseonAction("record"))}
           />
           <AmbientHit
             c={`j-fort life-explore-target ${lifeExploreFlash === "joseon:fort" ? "discovering" : ""} ${currentStep === "explore" && !lifeExploration.joseon.fort ? "guided" : ""}`}
@@ -2777,7 +2788,7 @@ export default function Stage2Escape({
                     "45%",
                     "bell",
                   )
-                : moveTo("68%", "-2%", () => {
+                : moveTo("69%", "-2%", () => {
                     clearTimeout(ritualTimer.current);
                     setRitualActive(true);
                     ritualTimer.current = setTimeout(
@@ -4883,50 +4894,52 @@ function BronzeReward({ close, onClaim }) {
   const [beat, setBeat] = useState(0);
   useEffect(() => {
     gameSfx("door");
-    const a = setTimeout(() => setBeat(1), 650),
-      b = setTimeout(() => {
-        setBeat(2);
-        gameSfx("step");
-      }, 1500),
-      c = setTimeout(() => {
-        setBeat(3);
-        gameSfx("gear");
-      }, 2650);
-    return () => {
-      clearTimeout(a);
-      clearTimeout(b);
-      clearTimeout(c);
-    };
+    const timers = [
+      setTimeout(() => setBeat(1), 650),
+      setTimeout(() => { setBeat(2); gameSfx("gear"); }, 1500),
+      setTimeout(() => { setBeat(3); gameSfx("step"); }, 2400),
+      setTimeout(() => { setBeat(4); gameSfx("step"); }, 3550),
+      setTimeout(() => { setBeat(5); gameSfx("gear"); }, 4750),
+    ];
+    return () => timers.forEach(clearTimeout);
   }, []);
   return (
     <Box close={close} compact="bronze-reward">
       <small>청동기 시대의 기록이 돌아오는 중</small>
       <div className={`bronze-reward-scene beat-${beat}`}>
-        <img
-          className="reward-store"
-          src={bronzeStoreCloseup}
-          alt="문이 열리는 곡식 창고"
-        />
-        <div className="reward-doors">
-          <i />
-          <i />
-        </div>
-        <img
-          className="reward-maru"
-          src={bronzeMaruReward}
-          alt="시간 톱니 3을 두 손으로 건네는 마루"
-        />
-        <div className="reward-caption">
+        <svg className="bronze-handoff-art" viewBox="0 0 1672 941" role="img" aria-label="창고 문에서 나와 시간 톱니를 건네는 마루">
+          <defs>
+            <clipPath id="maru-door-opening"><rect x="631" y="222" width="199" height="372" rx="3" /></clipPath>
+            <clipPath id="maru-reward-outline" clipPathUnits="objectBoundingBox">
+              <path d="M .49 .075 C .36 .071 .31 .17 .30 .25 L .325 .287 C .338 .308 .377 .337 .430 .350 L .357 .369 C .319 .394 .310 .456 .346 .480 L .367 .501 L .355 .600 L .332 .728 Q .322 .747 .372 .753 L .362 .830 Q .330 .858 .303 .884 Q .292 .912 .354 .916 L .431 .916 Q .458 .901 .454 .880 L .464 .768 L .527 .768 L .538 .880 Q .536 .910 .574 .918 L .652 .918 Q .690 .906 .679 .889 L .621 .837 L .609 .752 Q .686 .741 .675 .721 L .641 .602 L .634 .502 C .709 .490 .705 .403 .657 .367 L .550 .351 C .604 .332 .628 .303 .637 .271 C .662 .172 .627 .077 .49 .075 Z" />
+            </clipPath>
+            <radialGradient id="maru-door-light"><stop stopColor="#ffe4a0" /><stop offset="1" stopColor="#b77b24" stopOpacity="0" /></radialGradient>
+          </defs>
+          <image href={bronzeStoreCloseup} width="1672" height="941" />
+          <g clipPath="url(#maru-door-opening)">
+            <rect x="631" y="222" width="199" height="372" fill="#28180d" />
+            <ellipse className="bronze-door-glimmer" cx="730" cy="460" rx="72" ry="95" fill="url(#maru-door-light)" />
+            <svg x="631" y="222" width="199" height="372" viewBox="631 222 199 372" preserveAspectRatio="none" className="bronze-door-leaf">
+              <image href={bronzeStoreCloseup} width="1672" height="941" />
+            </svg>
+          </g>
+          <g className="bronze-maru-emerge">
+            <image href={bronzeMaruReward} width="1086" height="1448" clipPath="url(#maru-reward-outline)" />
+          </g>
+        </svg>
+      </div>
+        <div className="bronze-handoff-caption" aria-live="polite">
           {beat < 1
             ? "창고 문이 움직이기 시작한다…"
             : beat < 2
-              ? "문이 열렸다! 마루가 안으로 들어간다."
+              ? "문 안쪽에서 마루의 목소리가 들린다."
               : beat < 3
-                ? "마루가 반짝이는 톱니를 발견하고 다가온다."
+                ? "“찾았다! 여기 반짝이는 톱니가 있어!”"
+                : beat < 5
+                  ? "마루가 문을 나와 톱니를 들고 다가온다."
                 : "“덕분에 마을의 기록이 돌아왔어. 이건 네가 가져가!”"}
         </div>
-      </div>
-      <button className="puzzle-main" disabled={beat < 3} onClick={onClaim}>
+      <button className="puzzle-main" disabled={beat < 5} onClick={onClaim}>
         마루에게 시간 톱니 ③ 받기
       </button>
     </Box>

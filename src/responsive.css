@@ -1,0 +1,111 @@
+/* Viewport-only adaptation: scene coordinates and saved game state stay intact. */
+:root { --screen-width: 100vw; --screen-height: 100dvh; }
+.shell {
+  width: var(--screen-width);
+  height: var(--screen-height);
+  padding: env(safe-area-inset-top) env(safe-area-inset-right)
+    env(safe-area-inset-bottom) env(safe-area-inset-left);
+}
+.stage {
+  width: min(100%, calc(var(--screen-height) * 16 / 9));
+  height: auto;
+  max-height: 100%;
+  aspect-ratio: 16 / 9;
+  box-shadow: none;
+}
+.stage:fullscreen { width: 100%; height: 100%; }
+button, select { touch-action: manipulation; }
+/* Bronze finale: keep scenery, doorway and actor in one shared SVG coordinate space. */
+.chain-overlay:has(.compact-bronze-reward) { background: #2d1c10bf; backdrop-filter: blur(3px); }
+.chain-card.compact-bronze-reward { grid-template-rows: auto minmax(0, 1fr) auto auto; }
+.bronze-reward-scene .bronze-handoff-art { display: block; width: 100%; height: 100%; }
+.bronze-door-leaf { transform: translateX(0); transition: transform .7s ease; }
+.bronze-reward-scene:not(.beat-0) .bronze-door-leaf { transform: translateX(-202px); }
+.bronze-door-glimmer { opacity: 0; transition: opacity .45s ease; }
+.bronze-reward-scene.beat-2 .bronze-door-glimmer { opacity: .85; }
+.bronze-maru-emerge {
+  opacity: 0;
+  transform: translate(573px, 204px) scale(.29);
+  transform-origin: 0 0;
+  transition: transform 1.1s ease-in-out, opacity .35s ease;
+}
+.bronze-reward-scene.beat-3 .bronze-maru-emerge { opacity: 1; }
+.bronze-reward-scene.beat-4 .bronze-maru-emerge,
+.bronze-reward-scene.beat-5 .bronze-maru-emerge {
+  opacity: 1;
+  transform: translate(170px, 18px) scale(.68);
+}
+.bronze-handoff-caption {
+  padding: .25em .5em;
+  color: #4b3424;
+  font-size: clamp(12px, 1.1vw, 17px);
+  line-height: 1.4;
+  text-align: center;
+}
+/* Size against the scene rather than the browser; no mobile pixel minimum. */
+.chain-game.era-bronze .roaming-hero,
+.chain-game.era-joseon .roaming-hero { width: 12%; }
+.chain-game.era-bronze .roaming-hero > img:first-child,
+.chain-game.era-joseon .roaming-hero > img:first-child { width: 100%; }
+.chain-game.era-bronze .bronze-maru { width: 16.5%; }
+.chain-game.era-bronze .bronze-maru.harvest { width: 18%; }
+@media (max-width: 1100px), (max-height: 600px) {
+  .chain-game .chain-hud { gap: 3px; padding: 3px 5px; }
+  .chain-game .chain-hud > div:first-child { min-width: 0; flex-shrink: 1; }
+  .chain-game .chain-hud > button { min-width: 34px; padding-inline: 6px; }
+  .chain-game .chain-hud nav { flex-shrink: 0; }
+  .chain-game .chain-hud > button span,
+  .chain-game .chain-hud .audio-tab span { font-size: 11px; white-space: nowrap; }
+  .chain-card, .chain-card.intro, .chain-card.investigation-card,
+  .card, .card.wide, .arrival-card, .stage-card, .stage-card.wide {
+    min-width: 0;
+    width: 96%;
+    max-height: 96%;
+    overflow: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+  .chain-card.investigation-card { padding: 0 12px 12px; }
+  .investigation-grid { grid-template-columns: minmax(0, .72fr) minmax(0, 1.28fr); gap: 12px; }
+  .investigation-work { min-width: 0; }
+  .chain-card .modal-thought p, .chain-card p,
+  .chain-card .radio-choices button, .chain-card .answer-grid button,
+  .chain-card .puzzle-parts button, .chain-card .puzzle-main,
+  .chain-card .puzzle-reset, .chain-card .order-slots i { font-size: 14px; line-height: 1.4; }
+  .chain-card .radio-choices button, .chain-card .answer-grid button,
+  .chain-card .puzzle-main, .chain-card .puzzle-parts button { min-height: 40px; }
+  .chain-card .artifact-image { height: clamp(110px, 28vh, 240px); }
+  .chain-card .artifact-panel strong { font-size: 14px; }
+  .chain-card .artifact-panel span { font-size: 12px; }
+  .chain-card .investigation-bar { padding-right: 52px; min-height: 44px; }
+  .chain-card .chain-x { width: 36px; height: 36px; }
+  .chain-game .chain-bubble { font-size: 13px; max-width: 42%; }
+}
+@media (orientation: portrait) and (max-width: 900px) {
+  .shell::after {
+    content: '가로로 돌리면 마을과 도구가 더 크게 보여요.';
+    position: fixed; bottom: max(20px, env(safe-area-inset-bottom));
+    left: 12px; right: 12px; text-align: center;
+    color: #f7e7c8; font-size: 14px; pointer-events: none;
+  }
+  .chain-overlay, .backdrop, .stage-overlay, .history-curtain {
+    position: fixed; inset: 0; z-index: 500;
+    padding: 10px;
+  }
+  .chain-card, .chain-card.intro, .chain-card.investigation-card,
+  .card, .card.wide, .stage-card, .stage-card.wide, .arrival-card {
+    width: 100%; max-height: calc(var(--screen-height) - 20px);
+  }
+  .investigation-grid { grid-template-columns: 1fr; }
+  .chain-card .artifact-image { height: 150px; }
+  .chain-game .chain-hud { height: 36px; min-height: 0; }
+  .chain-game .chain-hud nav { display: none; }
+  .chain-game .chain-hud > div:first-child { padding: 0 5px; }
+  .chain-game .chain-hud > div:first-child small { display: none; }
+  .chain-game .chain-progress-chip small { font-size: 9px; }
+  .chain-game .chain-hud > button svg { display: none !important; }
+  .chain-game .chain-hud > button,
+  .chain-game .chain-hud > .audio-dock.history-audio,
+  .chain-game .chain-hud > .audio-dock.history-audio .audio-tab,
+  .chain-game .chain-progress-chip { min-width: 28px; height: 30px; min-height: 30px; padding: 0 4px; }
+}

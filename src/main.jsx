@@ -10,6 +10,8 @@ import coveredCloseupNatural from './assets/covered_closeup_2_natural.png';
 import windowView from './assets/window_schoolyard.png';
 import Stage2Escape from './Stage2Escape.jsx';
 import './styles.css';
+import './responsive.css';
+import './viewport.js';
 
 const KEY='historyEscapePrologue_art_v26_clear_story_fire';
 const STAGE2_KEY='historyEscapeStage2_v24_story_order';
